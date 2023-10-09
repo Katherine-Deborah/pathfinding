@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Map Visualization</title>
+</head>
+<body>
+    <canvas id="mapCanvas"></canvas>
+
+    <script>
+        const mapFile = "arena.map"; // Replace with your map file path
+
+        const terrainColors = {
+            ".": "white",
+            "G": "white",
+            "@": "black",
+            "O": "black",
+            "T": "green",
+            "S": "green",
+            "W": "blue",
+        };
+
+        const canvas = document.getElementById("mapCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const mapData = [];
+        const clickedPoints = [];
+
+        fetch(mapFile)
+            .then(response => response.text())
+            .then(data => {
+                data.trim().split('\n').forEach(line => {
+                    mapData.push(line.split(''));
+                });
+
+                const height = 49;
+                const width = 49;
+
+                canvas.width = width * 10; // Adjust the width for proper visualization
+                canvas.height = height * 10; // Adjust the height for proper visualization
+
+                const tileSize = 10; // Adjust the tile size as needed
+                
+                for (let y = 4; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const terrainType = mapData[y][x];
+                        const color = terrainColors[terrainType] || "gray"; // Default color
+
+                        ctx.fillStyle = color;
+                        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+                    }
+                }
+
+                // Add a click event listener to the canvas
+                canvas.addEventListener("click", function (event) {
+                    const rect = canvas.getBoundingClientRect();
+                    const mouseX = event.clientX - rect.left;
+                    const mouseY = event.clientY - rect.top;
+
+                    // Calculate the grid coordinates based on mouse position
+                    const gridX = Math.floor(mouseX / tileSize);
+                    const gridY = Math.floor(mouseY / tileSize);
+
+                    // Check if the clicked tile is white (passable terrain)
+                    if (gridY >= 4 && gridY < height && gridX >= 0 && gridX < width) {
+                        const terrainType = mapData[gridY][gridX];
+                        if (terrainType === "." || terrainType === "G") {
+                            // Perform your click action here for passable terrain
+                            alert(`You clicked on a passable terrain at (${gridX}, ${gridY})`);
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error("Error loading map data: ", error);
+            });
+    </script>
+</body>
+</html>
